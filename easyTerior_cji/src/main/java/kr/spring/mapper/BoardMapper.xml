@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.spring.mapper.BoardMapper">
+	<!-- SQL 문 작성 -->
+	<select id="boardList" resultType="kr.spring.entity.Board"> <!-- BoardMapper 인터페이스에 있는 메서드 이름과 동일해야 함 -->
+		SELECT * FROM board <!-- ; 없음 -->
+		ORDER BY indate DESC <!-- 최근 게시글 순 -->
+	</select>
+	<insert id="boardInsert" parameterType="kr.spring.entity.Board"><!-- resultType 쓸 필요 없음 메서드도 void므로, 하지만 매개변수로서 Board를 받아와야 함. -->
+		INSERT INTO board(memID, title, content, writer)
+		VALUES(#{memID}, #{title}, #{content}, #{writer}) <!-- 이들 역시 field명만 써도 그냥 가져오는 게 아니라 getter 통해서 가져오는 것 -->
+		
+	</insert>
+	<select id="boardContent" parameterType="int" resultType="kr.spring.entity.Board">
+		SELECT * FROM board
+		WHERE idx = #{idx} <!-- boardContent(int idx) 에서 idx였으니까 그대로 받아온 것 변동되는 값이라 # 붙임 -->
+	</select>
+	<delete id="boardDelete" parameterType="int">
+		DELETE FROM board 
+		WHERE idx = #{idx}
+	</delete>
+	<update id="boardUpdate" parameterType="kr.spring.entity.Board">
+		UPDATE board SET title=#{title}, content=#{content} 
+		WHERE idx = #{idx};
+	</update>
+	<!-- BoardMapper.java에 @Update("UPDATE board SET count = count + 1 WHERE idx = #{idx}") 있으면 아래 삭제해야 함
+	<update id="boardCount" parameterType="int">
+		UPDATE board SET count = count + 1
+		WHERE idx = #{idx};
+	</update>
+	 -->
+</mapper>

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.spring.mapper.MemberMapper">
+	<select id="registerCheck" parameterType="String" resultType="kr.spring.entity.Member">
+		SELECT * FROM member
+		WHERE memID = #{memID}
+	</select>
+
+	<insert id="join" parameterType="kr.spring.entity.Member"><!-- SQL 문장을 실행한 결과에 따라 숫자가 반환됨. 실행되면 1 에러나면 0 반환됨. 그러므로 returnType 지정X -->
+		INSERT INTO member(memIdx, memID, memPassword, memName, memNickname, memPhone, memEmail, memAddress, memProfile)
+			SELECT IFNULL(MAX(memIdx) + 1, 1), #{memID}, #{memPassword}, #{memName}, #{memNickname}, #{memPhone}, #{memEmail}, #{memAddress}, #{memProfile}
+			FROM member
+		<!-- VALUES(#{memID}, #{memID}, #{memPassword}, #{memName}, #{memNickname}, #{memPhone}, #{memEmail}, #{memAddress}, #{memProfile})  -->
+	</insert>
+
+	<select id="login" parameterType="kr.spring.entity.Member" resultType="kr.spring.entity.Member">
+		SELECT * FROM member
+		WHERE memID = #{memID} AND memPassword = #{memPassword}
+	</select>
+	
+	<update id="update" parameterType="kr.spring.entity.Member">
+		UPDATE member 
+		SET memPassword=#{memPassword}, memName=#{memName}, memNickname=#{memNickname}, memPhone=#{memPhone}, memEmail=#{memEmail}, memAddress=#{memAddress}, memProfile=#{memProfile}
+		WHERE memID = #{memID};
+	</update>
+
+	<update id="imageUpload" parameterType="kr.spring.entity.Member">
+		UPDATE member
+		SET memProfile=#{memProfile}
+		WHERE memID = #{memID};
+	</update>
+
+	<select id="getMember" parameterType="String" resultType="kr.spring.entity.Member">
+		SELECT * FROM member
+		WHERE memID = #{memID}
+	</select>
+
+</mapper>
