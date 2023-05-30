@@ -18,10 +18,15 @@ public class CommonController {
 		return "style/styleRoom";
 	}
 	
-	// 스타일 분석 게시판 이동
+	// 스타일 분석 이미지 등록
 		@RequestMapping("/colorChange.do")
 		public String colorChange() {
 			return "style/colorChange";
+		}
+	// 스타일 분석 이미지 보여주기
+		@RequestMapping("/colorChangeShow.do")
+		public String colorChangeshow() {
+			return "style/colorChangeShow";
 		}
 	
 }
