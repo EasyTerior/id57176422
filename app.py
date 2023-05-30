@@ -4,10 +4,10 @@ import numpy as np
 import requests
 import os
 import subprocess
-
+from flask_cors import CORS
 
 app = Flask(__name__)
-
+CORS(app)
 UPLOAD_FOLDER = 'C:/test123/'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
@@ -36,9 +36,6 @@ def process_image2():
 
     result = subprocess.run(["python", script] + args, capture_output=True, text=True)
 
-    # # # Read the text file and parse the coordinates
-    # # with open('C:/abcd.txt', 'r') as file:
-    # #     lines = file.read().splitlines()  # Remove newline characters
     # # Read the text file and parse the coordinates
     with open('D:/id57176422/yolov5/runs/predict-seg/exp22/labels/processed_image.txt', 'r') as file:
         lines = file.read().splitlines()  # Remove newline characters
@@ -48,18 +45,18 @@ def process_image2():
 
     # Define color mappings for different classes
     class_colors = {
-        1:(255,0, 0),
-        2:(255, 128,0),
-        3:(0, 100, 120),
-        4:(0, 100, 0),
-        5:(0, 100, 100),
-        6:(0, 100, 70),
-        7: (255, 100, 0), 
-        8: (0,0, 255),
-        9:(255, 0, 0),
-        10:(0, 0, 255),
-        11:(0, 100, 0),
-        # Add more class-color mappings as needed
+        0:(0,255,0), #침대
+        1:(0,255,0), #이불
+        2:(0,255,0), #카펫
+        3:(0,255,0), #의자
+        4:(0, 255, 0),  # 커튼
+        5:(0, 255, 0), #문
+        6:(0, 255, 0), #램프
+        7:(0, 255, 0), # 베개
+        8:(0, 255, 0), #선반
+        9:(0, 255, 0), #소파
+        10:(0, 255, 0), #테이블
+        #Add more class-color mappings as needed
     }
 
     # Iterate over the coordinates in reverse order and draw filled polygons on the mask image
@@ -109,6 +106,25 @@ def show_image():
         return send_from_directory(app.config['UPLOAD_FOLDER'], 'processed_image.jpg')
     else:
         return "No image has been processed yet.", 404
+    
+@app.route('/get_objects', methods=['GET'])
+def get_objects():
+    # Define color mappings for different classes
+    class_ids = {
+        0: "Bed", #침대
+        1: "Blanket", #이불
+        2: "Carpet", #카펫
+        3: "Chair", #의자
+        4: "Curtain",  # 커튼
+        5: "Door", #문
+        6: "Lamp", #램프
+        7: "Pillow", # 베개
+        8: "Shelf", #선반
+        9: "Sofa", #소파
+        10: "Table", #테이블
+        #Add more class-objects mappings as needed
+    }
+    return class_ids
 
 @app.route('/images/<path:filename>')
 def serve_image(filename):
