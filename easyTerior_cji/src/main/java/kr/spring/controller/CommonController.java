@@ -1,26 +1,37 @@
 package kr.spring.controller;
 
+import java.awt.Point;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.io.FileReader;
+import java.io.BufferedReader;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.servlet.ModelAndView;
+
+import kr.spring.entity.PointDTO;
 
 @Controller
 public class CommonController {
-// 	main - 요청 URL /
+	
+	// 	main - 요청 URL /
 	@RequestMapping("/")
 	public String main() {
 		// return "main";
 		return "index";
 	}
-	
+
+
 	// 스타일 분석 게시판 이동
 	@RequestMapping("/styleRoom.do")
 	public String styleRoom() {
@@ -37,39 +48,16 @@ public class CommonController {
 		public String colorChangeshow() {
 			return "style/colorChangeShow";
 		}
-		@GetMapping("/colorChangeShowPlus.do")
-		public ResponseEntity<String> colorChangeShowPlus(@RequestParam("object") String object, @RequestParam("color") String color) throws IOException {
-
-		    // Parse color from the input color string
-		    int r = Integer.valueOf(color.substring(0, 2), 16);
-		    int g = Integer.valueOf(color.substring(2, 4), 16);
-		    int b = Integer.valueOf(color.substring(4, 6), 16);
-
-		    // Read the object data from the text file
-		    List<String> lines = Files.readAllLines(Paths.get("D:/id57176422/yolov5/runs/predict-seg/exp22/labels/processed_image.txt"));
-
-		    // Iterate over each line (object)
-		    for (String line : lines) {
-		        // Parse object name and coordinates from the line
-		        String[] parts = line.split(" ");
-		        String objectName = parts[0];
-		        List<Integer> coordinates = new ArrayList<>();
-		        for (int i = 1; i < parts.length; i++) {
-		            coordinates.add(Integer.parseInt(parts[i]));
-		        }
-
-		        // If the object name matches the input object, change its color in the image
-		        if (objectName.equals(object)) {
-		            changeColorForObjectInImage("C:/test123/processed_image.jpg", coordinates, new int[]{r, g, b});
-		        }
-		    }
-
-		    String newImagePath = "http://127.0.0.1:5000/images/processed_image.jpg"; // replace with the actual new image path
-		    return ResponseEntity.ok(newImagePath);
+	// 스타일 색상 결과 보여주고 저장
+		@RequestMapping("/colorChangeShowSave.do")
+		public String colorChangeshowing(@RequestParam("data") String jsonData, Model model) {
+			model.addAttribute("JsonData",jsonData);
+			return "style/colorChangeShowSave";
 		}
-
-		// This method should change the color of the specified object in the image
-		private void changeColorForObjectInImage(String imagePath, List<Integer> coordinates, int[] color) {
-		    // TODO: implement this method using OpenCV, ImageJ, or another image manipulation library
-		}
+		
+		
+		
+		
+		
+		
 }

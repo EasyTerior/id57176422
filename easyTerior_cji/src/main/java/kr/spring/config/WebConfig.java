@@ -36,6 +36,8 @@ public class WebConfig extends AbstractAnnotationConfigDispatcherServletInitiali
 		encodingFilter.setForceEncoding(true);
 		return new Filter[] { encodingFilter };
 	}
+	
+	
 
 
 	
