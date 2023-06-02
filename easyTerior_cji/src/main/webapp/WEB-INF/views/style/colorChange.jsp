@@ -16,6 +16,13 @@ rel="stylesheet" /><!-- icons -->
 body, main, section {
 position: relative;
 }
+     .alert5 {
+         color: red;
+         border: 1px solid red;
+         padding: 10px;
+         margin-bottom: 10px;
+     }
+
 </style>
 <script type="text/javascript">
 	$(document).ready(function(){
@@ -48,6 +55,14 @@ position: relative;
 		<div class="container-fluid" style="min-height:100vh;margin-bottom:200px;">
 			<div class="row m-auto" style="width:80%">
 			    <div class="col-sm-6">
+			    	<c:if test="${not empty param.message}">
+				        <div class="alert5">
+				        
+				            <strong>객체가 검출되지 않았습니다.</strong>
+				            </br>${param.message}
+				        </div>
+
+				        				    </c:if>
 			        <div class="card border-0">
 			            <div class="card-body">
 			                <h5 class="card-title text-center fw-bold">예시 이미지</h5>

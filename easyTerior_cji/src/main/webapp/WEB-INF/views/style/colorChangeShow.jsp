@@ -75,7 +75,7 @@ rel="stylesheet" /><!-- icons -->
 	function submitForm() {
 	    window.location.href = "http://localhost:8081/colorChangeShowImage.do";
 	}
-		
+
 
 </script>
 <style>
@@ -105,6 +105,8 @@ position: relative;
 			            </div>
 			            <img src="http://127.0.0.1:5000/images/processed_image.jpg" alt="Processed Image" style="width: 480px; height: 480x;">
 			        </div>
+
+
 			    </div>
 			    <div class="col-sm-6">
 			        <div class="card border-0">

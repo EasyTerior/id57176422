@@ -58,6 +58,10 @@ def process_image2():
         # 파일 경로 생성
         file_path = os.path.join(folder_path, latest_exp_folder, "labels/processed_image.txt")
 
+        # Check if the file exists
+        if not os.path.isfile(file_path):
+            return redirect('http://localhost:8081/colorChange.do?message=' + urllib.parse.quote('Image not detected'))
+
         with open(file_path, 'r') as file:
             lines = file.read().splitlines()  # Remove newline characters
 
