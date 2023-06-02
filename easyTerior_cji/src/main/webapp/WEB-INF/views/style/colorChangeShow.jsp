@@ -171,6 +171,8 @@ position: relative;
 			                		      this.style.backgroundColor = "blue";
 			                		      saveButton(this.id); // 함수로 버튼 저장
 			                		    }
+			                		    
+			                		    
 			                	    console.log("객체 " + this.id + "가 클릭되었습니다.");
 			                	  });
 			                	  // 컨테이너에 버튼 추가

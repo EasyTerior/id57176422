@@ -11,9 +11,18 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css"><!-- icons -->
 <link href="https://cdn.jsdelivr.net/npm/boxicons@latest/css/boxicons.min.css"
 rel="stylesheet" /><!-- icons -->
-<script src="https://cdn.jsdelivr.net/npm/jquery@3.6.4/dist/jquery.min.js"></script>		
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.6.4/dist/jquery.min.js"></script>	
+
+    <!-- jQuery library -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+    <!-- bxSlider Javascript file -->
+    <script src="https://cdn.jsdelivr.net/bxslider/4.2.12/jquery.bxslider.min.js"></script>
+
+    <!-- bxSlider CSS file -->
+    <link href="https://cdn.jsdelivr.net/bxslider/4.2.12/jquery.bxslider.css" rel="stylesheet" />
+
 <script>
-function saveImage() {
 	function saveImage() {
 		  var imageUrl = 'http://127.0.0.1:5000/images/processed_image.jpg';
 		  var fileName = prompt('저장할 파일 이름을 입력하세요.', 'processed_image.jpg');
@@ -28,6 +37,22 @@ function saveImage() {
 		    document.body.removeChild(link);
 		  }
 		}
+	</script>
+
+<script type="text/javascript">
+$(document).ready(function(){
+    $('.bxslider').bxSlider({
+        minSlides: 4, //한번에 보여질 슬라이드 최소 개수
+        maxSlides: 4, //최대 개수
+        moveSlides: 1, //한번에 움직이는 슬라이드 개수
+        slideWidth: 360, // 각 슬라이드의 폭 크기
+        slideMargin: 10, // 슬라이드 간 여백
+        mode: 'horizontal',
+        auto:true, //자동
+        pause:3000,
+        speed:1000
+    });
+});
 </script>
  		  
 <style>
@@ -62,6 +87,11 @@ position: relative;
        					 String data = request.getParameter("data");
     						%>
     						<p>당신이 사용한 RGB값</p><%= data %>
+							<div class="bxslider">
+								<c:forEach var="url" items="${image_urls}">
+							   	 <div><img src="${url}" width="320px" height="320px"></div>
+								</c:forEach>
+							</div>
 					</div>
 			    </div>
 			</div>

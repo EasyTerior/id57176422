@@ -10,6 +10,8 @@ import json
 from flask import Flask, request
 from flask_cors import cross_origin
 import urllib.parse
+import sys
+from IPython.display import Image, display
 
 app = Flask(__name__)
 CORS(app)
@@ -19,7 +21,7 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 bgr_color=None
 
 selected_items= []
-
+selected_items_labels=[]
 @app.route('/process_image2', methods=['POST'])
 def process_image2():
     # Check if an 'image' file was included in the request
@@ -228,6 +230,199 @@ def save_image():
                     pixel_coordinates.append((x_pixel, y_pixel))
                 
                 # Convert pixel coordinates to NumPy array
+                polygon_coordinates = np.array([pixel_coordinates], dtype=np.int32)
+
+                # BGR을 HSV로 변환
+                # bgr_color=bgr_color[::-1]
+                hsv_color = cv2.cvtColor(np.uint8([[bgr_color]]), cv2.COLOR_BGR2HSV)
+                hsv_color = hsv_color[0][0]
+
+                # hue
+                hue=hsv_color[0]
+                saturation=hsv_color[1]
+
+                # Create a mask for the polygon
+                mask = np.zeros(image.shape[:2], dtype=np.uint8)
+                cv2.fillPoly(mask, polygon_coordinates, 255)
+
+                # Convert the original image to HSV
+                hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+
+                # Change the hue of the masked area
+                hsv_image[mask == 255, 0] = hue #0 이라 한 이유는 마스크된 영역내의 모든 픽셀의 Hue(색조) 채널을 가리킴
+                hsv_image[mask == 255, 1] = saturation #1이라 한 이유는  마스크된 영역내의 모든 픽셀의 saturation(채도) 을 가리킴
+                #hsv_image[mask == 255,2] = value #2이라 한 이유는 마스크된 영역내의 모든 픽셀의 value(명도)를 가리킴 
+
+                # Convert the image back to BGR
+                image = cv2.cvtColor(hsv_image, cv2.COLOR_HSV2BGR)
+
+    #Hue(색조): 0에서 179까지의 범위를 갖습니다. 이 값은 색상의 종류를 나타냅니다. 예를 들어, 0은 빨간색에 해당하고, 60은 녹색에 해당합니다. 180은 다시 빨간색에 가까워지는 값입니다.
+    #Saturation(채도): 0에서 255까지의 범위를 갖습니다. 이 값은 색의 순수성 또는 탁하게 보이는 정도를 나타냅니다. 0은 무채색(흰색, 회색)에 해당하고, 255는 가장 높은 채도를 나타냅니다.
+    #Value(명도): 0에서 255까지의 범위를 갖습니다. 이 값은 색의 밝기를 나타냅니다. 0은 검은색에 해당하고, 255는 가장 밝은 색에 해당합니다.
+
+    # 이미지 보여주기
+    # cv2.imshow("Image", image)
+    # cv2.waitKey(0)
+    # cv2.destroyAllWindows()
+
+    cv2.imwrite('C:/test123/processed_image.jpg', image)
+
+
+    bgr_color__json = json.dumps(bgr_color)
+    
+    print(bgr_color__json)
+    encoded_json = urllib.parse.quote(bgr_color__json)  # URL encoding
+    
+    print(encoded_json)
+
+    def closest_color(rgb):
+        colors = {"빨간색": [0, 0, 255], "주황색": [0, 165, 255], "노랑색": [0, 255, 255], 
+              "초록색": [0, 255, 0], "파란색": [255, 0, 0], "남색": [255, 0, 255], 
+              "보라색": [238, 130, 238], "흰색": [255, 255, 255], "검은색": [0, 0, 0]}
+
+        closest_name = None
+        closest_distance = None  # Use 'closest_distance' instead of 'closest_color'
+        for name, color in colors.items():
+            distance = np.linalg.norm(np.array(color) - np.array(rgb))
+            if closest_distance is None or distance < closest_distance:
+                closest_distance = distance
+                closest_name = name
+
+        return closest_name
+    
+    real_color=closest_color(bgr_color)
+    print(real_color)
+    global selected_items_labels
+    print(selected_items_labels)
+
+    client_id = "YmwEYBDY7aXnrocNn5Zx"
+    client_secret = "0daNsnl46p"
+
+    # 중복성을 제거합니다. 최대 크기 제한은 제거했습니다.
+    selected_items_labels = list(set(selected_items_labels))
+    print(selected_items_labels)
+    all_image_urls = []
+
+    for label in selected_items_labels:
+        encText = urllib.parse.quote(str(real_color) + " " + label)
+        url = "https://openapi.naver.com/v1/search/image?query=" + encText
+        request = urllib.request.Request(url)
+        request.add_header("X-Naver-Client-Id",client_id)
+        request.add_header("X-Naver-Client-Secret",client_secret)
+        response = urllib.request.urlopen(request)
+        rescode = response.getcode()
+
+        if(rescode==200):
+            response_body = response.read()
+            response_dict = json.loads(response_body.decode('utf-8'))
+            # 리스트의 크기에 따라 이미지를 가져오는 개수를 조정합니다.
+            if len(selected_items_labels) <= 3:
+                image_urls = ",".join([urllib.parse.quote(item['link']) for item in response_dict['items'][:2]]) if response_dict['items'] else ""
+            else:
+                image_urls = urllib.parse.quote(response_dict['items'][0]['link']) if response_dict['items'] else ""
+            all_image_urls.append(image_urls)
+        else:
+            print("Error Code:" + rescode)
+    # 모든 이미지 URL을 쉼표로 구분하여 합칩니다.
+    all_image_urls_str = ",".join(all_image_urls)
+    redirect_url = "http://localhost:8081/colorChangeShowSave.do?data=" + encoded_json + "&image_urls=" + all_image_urls_str
+
+    return redirect(redirect_url)
+
+
+
+
+
+    # redirect_url = "http://localhost:8081/colorChangeShowSave.do?data=" + encoded_json
+    # return redirect(redirect_url)
+    # client_id = "YmwEYBDY7aXnrocNn5Zx"
+    # client_secret = "0daNsnl46p"
+    
+    # encText = urllib.parse.quote(str(real_color)+" 소파")
+    # url = "https://openapi.naver.com/v1/search/image?query=" + encText
+    # request = urllib.request.Request(url)
+    # request.add_header("X-Naver-Client-Id",client_id)
+    # request.add_header("X-Naver-Client-Secret",client_secret)
+    # response = urllib.request.urlopen(request)
+    # rescode = response.getcode()
+    # if(rescode==200):
+    #     response_body = response.read()
+    #     response_dict = json.loads(response_body.decode('utf-8'))
+    #     image_urls = ",".join([urllib.parse.quote(item['link']) for item in response_dict['items'][:3]])  # 최대 3개의 이미지 URL을 가져옵니다.
+    #     redirect_url = "http://localhost:8081/colorChangeShowSave.do?data=" + encoded_json + "&image_urls=" + image_urls
+    #     return redirect(redirect_url)
+    # else:
+    #     print("Error Code:" + rescode)
+
+    
+
+
+
+@app.route('/images/<path:filename>')
+def serve_image(filename):
+    return send_from_directory('C:/test123', filename)
+
+@app.route('/get_coordinates', methods=['GET'])
+def get_coordinates():
+    # 좌표 데이터 읽기 (위의 Python 코드 참조)
+    # ...
+    with open('D:/id57176422/yolov5/runs/predict-seg/exp22/labels/processed_image.txt', 'r') as f:
+        lines = f.readlines()
+        coordinates_list = []
+        for line in lines:
+            
+            coordinates = line.strip().split(' ') # 공백을 기준으로 문자열 분리
+            coordinates_list.append(coordinates)
+            # 이후 coordinates에 대한 처리 수행
+
+    return jsonify(coordinates=coordinates_list)
+@app.route('/save_selected_item', methods=['POST'])
+def save_selected_item():
+    global selected_items
+    global selected_items_labels
+
+    data = request.get_json()
+    print('Request data:', data)  # Print the entire request data
+    selected_items = data.get('selectedItems', [])
+
+    print('Selected items:', selected_items)
+
+    def get_object_label(object_id):
+        switcher = {
+            0: "침대",
+            1: "이불",
+            2: "카펫",
+            3: "의자",
+            4: "커튼",
+            5: "문",
+            6: "램프",
+            7: "베개",
+            8: "선반",
+            9: "소파",
+            10: "테이블"
+        }
+        return switcher.get(object_id, "알 수 없음")
+    for item in selected_items:
+        item_id = int(item)  # 문자열을 정수로 변환
+        item_label = get_object_label(item_id)
+        selected_items_labels.append(item_label)
+    print(selected_items_labels)
+    return 'Success', 200
+        
+@app.route('/endpoint', methods=['POST'])
+def handle_post():
+    data = request.json
+    button_id = data['id']
+    button_label = data['label']
+    # button_id와 button_label을 처리하는 코드 여기에 작성
+    # ...
+    return {"message": "Successfully received the data."}
+
+if __name__ == '__main__':
+    app.run(debug=True)
+#투명도용 코드
+
+                # Convert pixel coordinates to NumPy array
                 # polygon_coordinates = np.array([pixel_coordinates], dtype=np.int32)
                 
 
@@ -253,81 +448,3 @@ def save_image():
                 # overlay = np.zeros_like(image)
                 # overlay = cv2.fillPoly(overlay, polygon_coordinates, bgr_color)
                 # image = cv2.addWeighted(image, 1.0, overlay, alpha / 255.0, 0)
-
-                # Convert pixel coordinates to NumPy array
-                polygon_coordinates = np.array([pixel_coordinates], dtype=np.int32)
-
-                # BGR을 HSV로 변환
-                # bgr_color=bgr_color[::-1]
-                hsv_color = cv2.cvtColor(np.uint8([[bgr_color]]), cv2.COLOR_BGR2HSV)
-                hsv_color = hsv_color[0][0]
-
-                # hue
-                hue=hsv_color[0]
-
-                # Create a mask for the polygon
-                mask = np.zeros(image.shape[:2], dtype=np.uint8)
-                cv2.fillPoly(mask, polygon_coordinates, 255)
-
-                # Convert the original image to HSV
-                hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-
-                # Change the hue of the masked area
-                hsv_image[mask == 255, 0] = hue
-
-                # Convert the image back to BGR
-                image = cv2.cvtColor(hsv_image, cv2.COLOR_HSV2BGR)
-
-    # 이미지 보여주기
-    # cv2.imshow("Image", image)
-    # cv2.waitKey(0)
-    # cv2.destroyAllWindows()
-
-    cv2.imwrite('C:/test123/processed_image.jpg', image)
-
-
-    bgr_color__json = json.dumps(bgr_color)
-    
-    print(bgr_color__json)
-    encoded_json = urllib.parse.quote(bgr_color__json)  # URL encoding
-    
-    print(encoded_json)
-
-    redirect_url = "http://localhost:8081/colorChangeShowSave.do?data=" + encoded_json
-    return redirect(redirect_url)
-
-@app.route('/images/<path:filename>')
-def serve_image(filename):
-    return send_from_directory('C:/test123', filename)
-
-@app.route('/get_coordinates', methods=['GET'])
-def get_coordinates():
-    # 좌표 데이터 읽기 (위의 Python 코드 참조)
-    # ...
-    with open('D:/id57176422/yolov5/runs/predict-seg/exp22/labels/processed_image.txt', 'r') as f:
-        lines = f.readlines()
-        coordinates_list = []
-        for line in lines:
-            
-            coordinates = line.strip().split(' ') # 공백을 기준으로 문자열 분리
-            coordinates_list.append(coordinates)
-            # 이후 coordinates에 대한 처리 수행
-
-    return jsonify(coordinates=coordinates_list)
-    
-@app.route('/save_selected_item', methods=['POST'])
-def save_selected_item():
-    global selected_items
-
-    data = request.get_json()
-    print('Request data:', data)  # Print the entire request data
-    selected_items = data.get('selectedItems', [])
-
-    print('Selected items:', selected_items)
-
-    return 'Success', 200
-        
-
-
-if __name__ == '__main__':
-    app.run(debug=True)

@@ -50,9 +50,16 @@ public class CommonController {
 		}
 	// 스타일 색상 결과 보여주고 저장
 		@RequestMapping("/colorChangeShowSave.do")
-		public String colorChangeshowing(@RequestParam("data") String jsonData, Model model) {
+		public String colorChangeshowing(@RequestParam("data") String jsonData,@RequestParam("image_urls") String imageUrls, Model model) {
 			model.addAttribute("JsonData",jsonData);
+			 model.addAttribute("image_urls", imageUrls.split(","));
 			return "style/colorChangeShowSave";
+		}
+		
+	// 스타일 분석 이미지 보여주기
+		@RequestMapping("/endpoint.do")
+		public String endpoint() {
+			return "style/colorChangeShow";
 		}
 		
 		
