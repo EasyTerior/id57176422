@@ -46,7 +46,7 @@ $(document).ready(function(){
         maxSlides: 4, //최대 개수
         moveSlides: 1, //한번에 움직이는 슬라이드 개수
         slideWidth: 360, // 각 슬라이드의 폭 크기
-        slideMargin: 10, // 슬라이드 간 여백
+        slideMargin: 5, // 슬라이드 간 여백
         mode: 'horizontal',
         auto:true, //자동
         pause:3000,
@@ -63,6 +63,34 @@ position: relative;
       background-color: green;
       color: white;
     }
+ .pline{
+ 		font-size: 20px;  /* 글자 크기 설정 */
+	    font-weight:bold;
+	    text-align:center;
+	    margin-top:20px;
+	    margin-bottom:20px;
+ 
+ }  
+	#resultbutton{
+	
+		border-radius: 12px;  /* 둥근 모서리를 원하는 크기로 설정 */
+		background-color: #62B2E4;  /* 버튼의 배경 색상 설정 */ -->
+		padding: 10px 20px;  /* 버튼 내부의 공간 설정 */
+		border: none;  /* 버튼 테두리 제거 */
+		cursor: pointer;  /* 마우스 커서 모양 변경 */
+		color: white;  /* 버튼의 글자 색상 설정 */
+	    font-size: 30px;  /* 글자 크기 설정 */
+	    font-weight:bold;
+	    margin:0 auto;
+	    width: 300px; /* 버튼의 너비 설정 */
+    	height: 50px; /* 버튼의 높이 설정 */
+	}
+	#resultbutton:hover {
+        background-color: #0895C4;  /* 배경 색상 변경 */
+    }
+	.bx-prev {
+	  width:100%;
+	}
 </style>
 <title>EasyTerior</title>
 </head>
@@ -71,33 +99,32 @@ position: relative;
 	<jsp:include page="../common/header.jsp"></jsp:include>
 	<jsp:include page="../common/submenu.jsp"></jsp:include>
 	<section class="fixed-top container-fluid overflow-auto h-100" style="margin:137px 0 56px 0;padding:0 0 56px 100px;">
-		<h1 class="text-center mt-4 mb-3">소품 색 변경하기</h1>
+		<h1 class="text-center mt-4 mb-3 fw-bold">소품 색 변경 결과</h1></br>
 		<!-- 실질 컨텐츠 위치 -->
 		<div class="container-fluid" style="min-height:100vh;margin-bottom:200px;">
 			<div class="row m-auto" style="width:80%">
-			    <div class="col-sm-6">
+			    <div class="col-sm-13">
 			        <div class="card border-0">
-			            <div class="card-body">
-			                <h5 class="card-title text-center fw-bold">색상 변경된 사진</h5>
-			            </div>
-			            <img src="http://127.0.0.1:5000/images/processed_image.jpg" alt="Processed Image" style="width: 480px; height: 480x;">
+			            <img src="http://127.0.0.1:5000/images/processed_image.jpg" alt="Processed Image" style="display: block; margin: 0 auto; width: 540px; height: 320px;">
 			        </div>
-			        <div>
+			        <div class="row text-center">
 			            <%
        					 String data = request.getParameter("data");
+			            data = data.substring(1, data.length()-1); // Remove brackets
+			            String[] rgbValues = data.split(", "); // Split by comma and space
     						%>
-    						<p>당신이 사용한 RGB값</p><%= data %>
-							<div class="bxslider">
-								<c:forEach var="url" items="${image_urls}">
-							   	 <div><img src="${url}" width="320px" height="320px"></div>
-								</c:forEach>
-							</div>
+    						<p class="pline">선택하신 컬러의 RGB 값은 R <%= rgbValues[0]%>, G <%= rgbValues[1]%>, B <%= rgbValues[2]%> 입니다.</p>
 					</div>
 			    </div>
+			    <button id="resultbutton" type="button">변경된 사진 저장</button>
+			    </br>
+			    <p class="pline">이 색깔과 관련된 인테리어 소품을 추천해드릴게요!</p></br>
+			    	<div class="bxslider">
+					<c:forEach var="url" items="${image_urls}">
+				   	 	<img src="${url}" width="240px" height="160px">
+					</c:forEach>	
+				</div>
 			</div>
-			<button onclick="saveImage()" >이미지 저장</button>
-			<div class="row text-center" style="padding-top:50px;">
-			</div>		  
 		</div>
 	</section>
 	<jsp:include page="../common/footer.jsp"></jsp:include>
