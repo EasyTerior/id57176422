@@ -16,7 +16,7 @@ rel="stylesheet" /><!-- icons -->
 	function saveColor() {
 	  var colorPicker = document.getElementById("colorPicker");
 	  var selectedColor = colorPicker.value;
-
+		alert("색상을 저장하였습니다.");
 	  fetch("http://127.0.0.1:5000/save-color", {
 	    method: "POST",
 	    headers: {
@@ -44,6 +44,7 @@ rel="stylesheet" /><!-- icons -->
 	function saveButton(buttonID) {
 	  // save the button id to the array
 	  savedButtonIDs.push(buttonID);
+	  
 	}
 
 	function removeSavedButton(buttonID) {
@@ -55,7 +56,14 @@ rel="stylesheet" /><!-- icons -->
 	}
 
 	function saveSelectedItem() {
+	  // Check if there are any saved items
+	  if (savedButtonIDs.length === 0) {
+	    alert("적어도 하나 이상의 항목을 선택해주세요.");
+	    return;
+	  }
+		
 	  // send the saved button ids to the server
+	  
 	  var xhr = new XMLHttpRequest();
 	  xhr.open("POST", "http://127.0.0.1:5000/save_selected_item", true);  // Your Flask route here
 	  xhr.setRequestHeader("Content-Type", "application/json");
@@ -65,7 +73,9 @@ rel="stylesheet" /><!-- icons -->
 
 	  xhr.onload = function() {
 	    if (xhr.status === 200) {
-	      alert("Successfully sent to the server.");
+	      alert("선택한 소품을 저장 하였습니다.");
+	      var saveButton = document.getElementById("saveButton");
+	      saveButton.style.backgroundColor = "blue";
 	    } else {
 	      alert("Error occurred while sending to the server.");
 	    }
@@ -86,6 +96,63 @@ position: relative;
       background-color: green;
       color: white;
     }
+	#saveButton{
+		border-radius: 12px;  /* 둥근 모서리를 원하는 크기로 설정 */
+		background-color: #BFBBBB;  /* 버튼의 배경 색상 설정 */ -->
+		padding: 10px 20px;  /* 버튼 내부의 공간 설정 */
+		border: none;  /* 버튼 테두리 제거 */
+		cursor: pointer;  /* 마우스 커서 모양 변경 */
+		color: white;  /* 버튼의 글자 색상 설정 */
+	    font-size: 16px;  /* 글자 크기 설정 */
+	    font-weight:bold;
+	    width: 150px; /* 버튼의 너비 설정 */
+    	height: 50px; /* 버튼의 높이 설정 */
+	}    
+    /* 마우스가 버튼 위에 있을 때 스타일 */
+    #saveButton:hover {
+        background-color: #EBDDBD;  /* 배경 색상 변경 */
+    }
+    #colorButton
+    {
+		border-radius: 12px;  /* 둥근 모서리를 원하는 크기로 설정 */
+		background-color: #BFBBBB;  /* 버튼의 배경 색상 설정 */ -->
+		padding: 10px 20px;  /* 버튼 내부의 공간 설정 */
+		border: none;  /* 버튼 테두리 제거 */
+		cursor: pointer;  /* 마우스 커서 모양 변경 */
+		color: white;  /* 버튼의 글자 색상 설정 */
+	    font-size: 16px;  /* 글자 크기 설정 */
+	    font-weight:bold;
+	    width: 150px; /* 버튼의 너비 설정 */
+    	height: 50px; /* 버튼의 높이 설정 */
+	}
+    #colorButton:hover {
+       background-color: #EBDDBD;  /* 배경 색상 변경 */
+       }
+	#resultbutton{
+	
+		border-radius: 12px;  /* 둥근 모서리를 원하는 크기로 설정 */
+		background-color: #62B2E4;  /* 버튼의 배경 색상 설정 */ -->
+		padding: 10px 20px;  /* 버튼 내부의 공간 설정 */
+		border: none;  /* 버튼 테두리 제거 */
+		cursor: pointer;  /* 마우스 커서 모양 변경 */
+		color: white;  /* 버튼의 글자 색상 설정 */
+	    font-size: 30px;  /* 글자 크기 설정 */
+	    font-weight:bold;
+	    margin:0 auto;
+	    width: 250px; /* 버튼의 너비 설정 */
+    	height: 50px; /* 버튼의 높이 설정 */
+	}
+	#resultbutton:hover {
+        background-color: #0895C4;  /* 배경 색상 변경 */
+    }
+	#buttonContainer{
+	
+	display: flex;
+    justify-content: center;
+    align-items: center;
+	}
+
+
 </style>
 <title>EasyTerior</title>
 </head>
@@ -101,19 +168,16 @@ position: relative;
 			    <div class="col-sm-6">
 			        <div class="card border-0">
 			            <div class="card-body">
-			                <h5 class="card-title text-center fw-bold">업로드한 사진</h5>
+			                <h5 class="card-title text-center fw-bold" style="text-align:left">업로드한 사진</h5>
 			            </div>
 			            <img src="http://127.0.0.1:5000/images/processed_image.jpg" alt="Processed Image" style="width: 480px; height: 480x;">
 			        </div>
-
-
 			    </div>
 			    <div class="col-sm-6">
 			        <div class="card border-0">
 			            <div class="card-body">
-			                <h5 class="card-title text-center mb-4 fw-bold">색깔을 변경할 소품을 클릭해주세요</h5>
-			                	<h6>발견된 객체</h6>
-			                	<div>
+			                <h5 class="card-title text-center mb-4 fw-bold">발견된 객체</h5>
+			                <div>
 			                	<div id="buttonContainer"></div>
 			                	<script>
 			                	// 객체 ID와 레이블을 저장할 배열 생성
@@ -161,21 +225,36 @@ position: relative;
 			                	  button.innerText = objectLabel;
 
 			                	  // 버튼에 클래스 추가
-			                	  button.classList.add("green-button");
+			                	  button.classList.add("white-button");
+			                	  
+			                	  // 버튼에 스타일 속성 추가
+			                	  button.style.width = "70px";
+			                	  button.style.height ="40px";
+			                	  
+			                	  button.style.marginRight= "30px";
+			                	  button.style.backgroundColor="whitegray";
+			                	  
+			                	  button.style.color="black";
+			                	  button.style.border="none";
+			                	  button.style.fontWeight = "bold";  // 글씨 굵게
+			                	  button.style.transition = "box-shadow 0.2s ease"; // box-shadow에 대한 transition 속성 추가
 
-			                	  // 버튼에 클릭 이벤트 리스너 추가
+			                	// 버튼에 클릭 이벤트 리스너 추가
 			                	  button.addEventListener("click", function () {
-			                		    // 버튼이 클릭되었을 때 수행할 동작 정의
-			                		    if (this.style.backgroundColor === "blue") {
-			                		      this.style.backgroundColor = "";
-			                		      removeSavedButton(this.id); // 함수로 저장된 버튼 제거
-			                		    } else {
-			                		      this.style.backgroundColor = "blue";
-			                		      saveButton(this.id); // 함수로 버튼 저장
-			                		    }
-			                		    
-			                		    
-			                	    console.log("객체 " + this.id + "가 클릭되었습니다.");
+			                	      // 버튼이 클릭되었을 때 그림자 변경
+			                	      this.style.boxShadow = "0px 0px 5px 2px rgba(0, 0, 0, 0.25)";
+			                	      
+			                	      // 버튼이 클릭되었을 때 수행할 동작 정의
+			                	      if (this.style.backgroundColor === "rgb(173, 216, 230)") { // RGB 코드로 밝은 하늘색 표현
+			                	          this.style.backgroundColor = "";
+			                	          this.style.boxShadow = "";  // 클릭이 해제됐을 때 그림자 제거
+			                	          removeSavedButton(this.id); // 함수로 저장된 버튼 제거
+			                	      } else {
+			                	          this.style.backgroundColor = "rgb(173, 216, 230)"; // RGB 코드로 밝은 하늘색 표현
+			                	          this.style.boxShadow = "0px 0px 10px 4px rgba(0, 0, 0, 0.25)"; // 클릭됐을 때 그림자 추가
+			                	          saveButton(this.id); // 함수로 버튼 저장
+			                	      }
+
 			                	  });
 			                	  // 컨테이너에 버튼 추가
 			                	  buttonContainer.appendChild(button);
@@ -209,23 +288,35 @@ position: relative;
 			                	    }
 			                	  }
 			                	</script>
+			                </div>
+			                </br>
+			                </br>
+			                </div>
 			                	
-			                	</div>
-			                	<button id="saveButton" type="button" onclick="saveSelectedItem()">변경할 소품 저장</button>
-			                    <div>
-			                    <h6 class="card-title text-center mb-4 fw-bold">색상을 선택해주세요</h5>
-								  <input type="color" id="colorPicker" value="#ff0000"><br>
-									<button id="colorButton" type="button" onclick="saveColor()">Save Color</button>
+			                    
+			                   <div style="display: flex; justify-content: center; align-items: center;">
+									   <button id="saveButton" type="button" onclick="saveSelectedItem()">선택한 소품 저장</button>
+								</div>
+								</br>
+			                    <div >
+			                    <h5 class="card-title text-center mb-4 fw-bold">색상을 선택해주세요</h5>
 			                    </div>
-			                <p class="card-text text-center" style="padding:90px 0 0 0;"><br/> <br/><br/><br/></p>
-			            </div>
-			            <form action="http://127.0.0.1:5000/colorChangeShowImage.do" method="POST" enctype="multipart/form-data" class="text-center">
-			            <button onclick ="submitForm()">색상 변경하기</button>
-			            </form>
+			                    <div >
+			                    	<div style="display: flex; justify-content: center; align-items: center;">
+			                    		<input type="color" id="colorPicker" value="#ff0000">
+			                    	</div>
+			                    	</br>
+								  	<div style="display: flex; justify-content: center; align-items: center;">
+								  		<button id="colorButton" type="button" onclick="saveColor()">색상 저장</button>
+								  	</div>
+								</div>
 			        </div>
 			    </div>
 			</div>
 			<div class="row text-center" style="padding-top:50px;">
+						<form action="http://127.0.0.1:5000/colorChangeShowImage.do" method="POST" enctype="multipart/form-data" class="text-center" >
+			            <button onclick ="submitForm()" id="resultbutton">색상 변경하기</button>
+			            </form>
 			</div>		  
 		</div>
 	</section>
