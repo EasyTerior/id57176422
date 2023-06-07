@@ -57,11 +57,9 @@ position: relative;
 			    <div class="col-sm-6">
 			    	<c:if test="${not empty param.message}">
 				        <div class="alert5">
-				        
 				            <strong>객체가 검출되지 않았습니다.</strong>
 				            </br>${param.message}
 				        </div>
-
 				        				    </c:if>
 			        <div class="card border-0">
 			            <div class="card-body">

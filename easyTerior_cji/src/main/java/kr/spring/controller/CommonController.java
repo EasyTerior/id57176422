@@ -9,12 +9,20 @@ import java.util.List;
 import java.io.FileReader;
 import java.io.BufferedReader;
 
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.servlet.ModelAndView;
@@ -49,6 +57,7 @@ public class CommonController {
 			return "style/colorChangeShow";
 		}
 	// 스타일 색상 결과 보여주고 저장
+		
 		@RequestMapping("/colorChangeShowSave.do")
 		public String colorChangeshowing(@RequestParam("data") String jsonData,@RequestParam("image_urls") String imageUrls, Model model) {
 			model.addAttribute("JsonData",jsonData);
@@ -62,7 +71,10 @@ public class CommonController {
 			return "style/colorChangeShow";
 		}
 		
-		
+		@GetMapping("/colorChange2.do")
+		public String showColorChangeForm() {
+		    return "style/colorChange2";
+		}
 		
 		
 		

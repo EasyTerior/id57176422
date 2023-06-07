@@ -19,7 +19,7 @@ import com.zaxxer.hikari.HikariDataSource;
 
 @Configuration
 @MapperScan(basePackages = {"kr.spring.mapper"}) // mapper 설정 // mapper 파일을 어디에 넣을지 -> // mybatis가 찾아가도록
-@PropertySource({"classpath:persistence-mysql.properties"}) // 같은 경로임
+@PropertySource({"classpath:persistence-mysql_local.properties"}) // 같은 경로임
 public class RootConfig {
 	// db 연동 정보 -> 외부파일(속성파일, property file)로 만들어 빼내서 불러오기
 	// src/main/resources에 property file 만들어서 넣기 -> persistence-mysql.properties

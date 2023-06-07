@@ -12,6 +12,7 @@ from flask_cors import cross_origin
 import urllib.parse
 import sys
 from IPython.display import Image, display
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 CORS(app)
@@ -19,48 +20,83 @@ UPLOAD_FOLDER = 'C:/test123/'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 bgr_color=None
-
 selected_items= []
 selected_items_labels=[]
 @app.route('/process_image2', methods=['POST'])
 def process_image2():
     # Check if an 'image' file was included in the request
+    # image 파일이 request.files 객체 있는지 확인
     if 'image' not in request.files:
         return "No 'image' file included in request.", 400
 
     # Get the uploaded image file
+    #업로드된 이미지 파일 가져오기
     image_file = request.files['image']
 
     # Read the image using OpenCV
+    # image_file.read()를 사용하여 파일 데이터를 버퍼로 읽은 다음
+    # 버퍼 데이터를 NumPy배열로 변환
+    # OpenCV에서 이미지 조작을 위한 다양한 기능과 유틸리티 사용하기위해
+    # Numpy 배열로 바꿈
     nparr = np.frombuffer(image_file.read(), np.uint8)
+    
+    # cv2.imdecode()를 사용하여 이미지로 디코딩하면서 cv2.Imread_color로
+    # 컬러 형식으로 이미지를 읽음
     image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
     # Halve the size of the image
+    # 이미지 크기를 조정하는건데 일부러 1 1로 뒀음 1 1로 둔건은 원본 크기를 유지
     resized_image = cv2.resize(image, None, fx=1, fy=1)
 
     # Save the resized image to the specified directory
+    # 조정된 이미지를 저장할 경로를 만들고 파일명을 조합하여 조정된 이미지 저장
     img_path = os.path.join(app.config['UPLOAD_FOLDER'], 'processed_image.jpg')
+    #cv2.imwrite를 사용하여 조정된 이미지를 지정된 경로에 저장
     cv2.imwrite(img_path, resized_image)
 
     script = "yolov5/segment/predict.py"
+    # 명령행 인수를 리스트 형태로 지정
     args = ["--weights", "best.pt", "--img", "736", "--conf", "0.2", "--source", "C:/test123/processed_image.jpg", "--retina-masks", "--save-txt"]
 
+    #subprocess.run 함수를 사용하여 python 스크립트를 실행함
+    #capture_output=True는 스크립트의 출력을 캡쳐하여 결과를 얻을수있도록
+    #txt=True는 실행결과를 텍스트 형식으로 반환하도록 지정
     result = subprocess.run(["python", script] + args, capture_output=True, text=True)
 
     folder_path = "D:/id57176422/yolov5/runs/predict-seg/"  # 기존 폴더 경로
+    #폴더 이름의 접두사
     exp_prefix = "exp"
 
+    
+
     # exp 폴더에서 가장 큰 숫자를 찾기
+    # os.listdir(folder_path)는 folder_path에 있는 모든 파일과 폴더의 리스트를 반환
+    # 이 리스트에서 폴더인것과 'exp_prefix'로 시작하는 것만 선택
+    # os.path.isdir(os.path.join(folderpath,f)) 표현식은 folder_path 디렉토리의 주어진 항목이 하위 디렉토리인지 여부 확인
+    # f는 해당 디렉토리의 항목(파일 또는 폴더)를 나타냄
+    # os.path.isdir()은 경로를 인수로 받아 경로가 디렉토리를 가리키면 True 그렇지않으면 False
     exp_folders = [f for f in os.listdir(folder_path) if os.path.isdir(os.path.join(folder_path, f)) and f.startswith(exp_prefix)]
+    
+    #max는 리스트에서 가장큰 값을 가진 폴더를 찾음 
+    #x[len(exp_prefix)]는 폴더이름에서 exp_prefix를 제외한 숫자 부분을 출력
+    #x[len(exp_prefix):].isdigit()는 추출한 숫자 부분이 숫자로 구성되어 있는지를 확인하는 조건입니다.
+    #isdigit() 메서드는 문자열이 모두 숫자로 이루어져 있는지를 확인
+    #int(x[len(exp_prefix):]) if x[len(exp_prefix):].isdigit() else -1는 추출한 숫자 부분을 정수로 변환하는 부분입니다.
+    #.isdigit() 문자열이 숫자(숫자 문자)로만 구성되어있는지 확인 #숫자가아니면 -1을반환
     latest_exp_folder = max(exp_folders, key=lambda x: int(x[len(exp_prefix):]) if x[len(exp_prefix):].isdigit() else -1)
 
     if latest_exp_folder:
         # 파일 경로 생성
+        #os.path.join()함수로 파일 경로 생성
         file_path = os.path.join(folder_path, latest_exp_folder, "labels/processed_image.txt")
 
         # Check if the file exists
+        #.isfile은 os.path에서 제공하는 함수 파일이 있다면 True
+        #urllib.parse.quote() 문자열에서 특수문자를 인코딩하여 URL에 포함하기 위한 안전한 문자열을 만드는 함수
         if not os.path.isfile(file_path):
             return redirect('http://localhost:8081/colorChange.do?message=' + urllib.parse.quote('Image not detected'))
+        
+
 
         with open(file_path, 'r') as file:
             lines = file.read().splitlines()  # Remove newline characters
@@ -68,6 +104,7 @@ def process_image2():
     # Create a list to store the detected object IDs
     detected_object_ids = []
     #Create a mask image with the same shape as the original image
+    # 원본이미지와 동일한 차원을 가지지만 모든 픽셀이 검은색인 새로운 이미지를 생성
     mask = np.zeros_like(image)
 
     # Define color mappings for different classes
@@ -334,34 +371,6 @@ def save_image():
     return redirect(redirect_url)
 
 
-
-
-
-    # redirect_url = "http://localhost:8081/colorChangeShowSave.do?data=" + encoded_json
-    # return redirect(redirect_url)
-    # client_id = "YmwEYBDY7aXnrocNn5Zx"
-    # client_secret = "0daNsnl46p"
-    
-    # encText = urllib.parse.quote(str(real_color)+" 소파")
-    # url = "https://openapi.naver.com/v1/search/image?query=" + encText
-    # request = urllib.request.Request(url)
-    # request.add_header("X-Naver-Client-Id",client_id)
-    # request.add_header("X-Naver-Client-Secret",client_secret)
-    # response = urllib.request.urlopen(request)
-    # rescode = response.getcode()
-    # if(rescode==200):
-    #     response_body = response.read()
-    #     response_dict = json.loads(response_body.decode('utf-8'))
-    #     image_urls = ",".join([urllib.parse.quote(item['link']) for item in response_dict['items'][:3]])  # 최대 3개의 이미지 URL을 가져옵니다.
-    #     redirect_url = "http://localhost:8081/colorChangeShowSave.do?data=" + encoded_json + "&image_urls=" + image_urls
-    #     return redirect(redirect_url)
-    # else:
-    #     print("Error Code:" + rescode)
-
-    
-
-
-
 @app.route('/images/<path:filename>')
 def serve_image(filename):
     return send_from_directory('C:/test123', filename)
@@ -421,6 +430,17 @@ def handle_post():
     # button_id와 button_label을 처리하는 코드 여기에 작성
     # ...
     return {"message": "Successfully received the data."}
+
+@app.route('/process_image5', methods=['POST'])
+def process_image():
+    file = request.files['image']
+    if file:
+        filename = secure_filename(file.filename)
+        file.save(os.path.join('received_images', filename))
+        return 'Image received and saved'
+    else:
+        return 'No image received', 400
+
 
 if __name__ == '__main__':
     app.run(debug=True)
