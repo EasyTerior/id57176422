@@ -22,6 +22,7 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 bgr_color=None
 selected_items= []
 selected_items_labels=[]
+
 @app.route('/process_image2', methods=['POST'])
 def process_image2():
     # Check if an 'image' file was included in the request
@@ -66,8 +67,6 @@ def process_image2():
     folder_path = "D:/id57176422/yolov5/runs/predict-seg/"  # 기존 폴더 경로
     #폴더 이름의 접두사
     exp_prefix = "exp"
-
-    
 
     # exp 폴더에서 가장 큰 숫자를 찾기
     # os.listdir(folder_path)는 folder_path에 있는 모든 파일과 폴더의 리스트를 반환
@@ -336,8 +335,7 @@ def save_image():
     global selected_items_labels
     print(selected_items_labels)
 
-    client_id = "YmwEYBDY7aXnrocNn5Zx"
-    client_secret = "0daNsnl46p"
+
 
     # 중복성을 제거합니다. 최대 크기 제한은 제거했습니다.
     selected_items_labels = list(set(selected_items_labels))
